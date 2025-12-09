@@ -1,174 +1,146 @@
- //Load navbar + footer
-    fetch("components/nav.html")
-      .then(res => res.text())
-      .then(html => document.getElementById("navbar").innerHTML = html);
-
-    fetch("components/footer.html")
-      .then(res => res.text())
-      .then(html => document.getElementById("footer").innerHTML = html);
-  
-// Set current year in footer
-document.getElementById('year').textContent = new Date().getFullYear();
-
-
-/*************************************************
- * GLOBAL STATE
- *************************************************/
-
-let tasks = [];            // Array of task objects (JSON)
-let completedTasks = [];   // For stats or completed.html
-
-// LocalStorage Keys
-const TASKS_KEY = "todo_tasks";
-const COMPLETED_KEY = "todo_completed";
-
-/*************************************************
- * LOAD INITIAL DATA
- *************************************************/
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  // Load NAV
+  fetch("components/nav.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("navbar").innerHTML = html;
+    });
+
+  // Load FOOTER + set year AFTER it loads
+  fetch("components/footer.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("footer").innerHTML = html;
+      document.getElementById("year").textContent = new Date().getFullYear();
+    });
+
+  // ----------------------------
+  // GLOBAL STATE
+  // ----------------------------
+  let tasks = [];
+  let completedTasks = [];
+
+  const TASKS_KEY = "todo_tasks";
+  const COMPLETED_KEY = "todo_completed";
+
+  // ----------------------------
+  // LOAD SAVED DATA
+  // ----------------------------
   loadTasksFromLocalStorage();
   renderTasks();
-  loadDailyQuote();    // API call
-});
+  loadDailyQuote();
 
-/*************************************************
- * EVENT 1: Add a new task (form submit)
- *************************************************/
+  // ----------------------------
+  // ADD TASK
+  // ----------------------------
+  document.getElementById("taskForm").addEventListener("submit", function(e) {
+    e.preventDefault();
 
-document.getElementById("taskForm").addEventListener("submit", function (e) {
-  e.preventDefault();
+    const taskInput = document.getElementById("taskInput");
+    const text = taskInput.value.trim();
+    if (!text) return;
 
-  const taskInput = document.getElementById("taskInput");
-  const taskText = taskInput.value.trim();
+    const newTask = {
+      id: Date.now(),
+      text,
+      completed: false
+    };
 
-  if (taskText === "") return;
+    tasks.push(newTask);
+    saveTasksToLocalStorage();
+    renderTasks();
 
-  const newTask = {
-    id: Date.now(),
-    text: taskText,
-    completed: false,
-    createdAt: new Date().toISOString(),
-  };
-
-  tasks.push(newTask);
-  saveTasksToLocalStorage();
-
-  renderTasks();
-
-  taskInput.value = "";
-});
-
-/*************************************************
- * RENDER TASK LIST
- *************************************************/
-
-function renderTasks() {
-  const list = document.getElementById("taskList");
-  list.innerHTML = "";
-
-  tasks.forEach(task => {
-    const item = document.createElement("div");
-    item.className = "list-group-item d-flex align-items-center justify-content-between fade-in";
-
-    // Task text
-    const label = document.createElement("span");
-    label.textContent = task.text;
-    if (task.completed) {
-      label.classList.add("text-decoration-line-through", "text-muted");
-    }
-
-    // BUTTONS container
-    const btnGroup = document.createElement("div");
-
-    // EVENT 2: Mark as complete
-    const completeBtn = document.createElement("button");
-    completeBtn.className = "btn btn-success btn-sm me-2";
-    completeBtn.textContent = "Done";
-    completeBtn.addEventListener("click", () => toggleComplete(task.id));
-
-    // EVENT 3: Delete task
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn btn-danger btn-sm";
-    deleteBtn.textContent = "Delete";
-    deleteBtn.addEventListener("click", () => deleteTask(task.id));
-
-    btnGroup.appendChild(completeBtn);
-    btnGroup.appendChild(deleteBtn);
-
-    item.appendChild(label);
-    item.appendChild(btnGroup);
-
-    list.appendChild(item);
+    taskInput.value = "";
   });
-}
 
-/*************************************************
- * MARK TASK COMPLETE
- *************************************************/
+  // ----------------------------
+  function renderTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
 
-function toggleComplete(id) {
-  tasks = tasks.map(t => {
-    if (t.id === id) {
-      t.completed = !t.completed;
+    tasks.forEach(task => {
+      const item = document.createElement("div");
+      item.className = "list-group-item d-flex justify-content-between align-items-center";
 
-      // Save completed task separately
-      if (t.completed) {
-        completedTasks.push(t);
-        saveCompletedToLocalStorage();
+      const label = document.createElement("span");
+      label.textContent = task.text;
+
+      if (task.completed) {
+        label.classList.add("text-decoration-line-through");
       }
-    }
-    return t;
-  });
 
-  saveTasksToLocalStorage();
-  renderTasks();
-}
+      const btns = document.createElement("div");
 
-/*************************************************
- * DELETE TASK
- *************************************************/
+      const doneBtn = document.createElement("button");
+      doneBtn.className = "btn btn-success btn-sm me-2";
+      doneBtn.textContent = "Done";
+      doneBtn.onclick = () => toggleComplete(task.id);
 
-function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
-  saveTasksToLocalStorage();
-  renderTasks();
-}
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn btn-danger btn-sm";
+      delBtn.textContent = "Delete";
+      delBtn.onclick = () => deleteTask(task.id);
 
-/*************************************************
- * SAVE / LOAD — LOCAL STORAGE
- *************************************************/
+      btns.appendChild(doneBtn);
+      btns.appendChild(delBtn);
 
-function saveTasksToLocalStorage() {
-  localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-}
+      item.appendChild(label);
+      item.appendChild(btns);
 
-function saveCompletedToLocalStorage() {
-  localStorage.setItem(COMPLETED_KEY, JSON.stringify(completedTasks));
-}
+      list.appendChild(item);
+    });
+  }
 
-function loadTasksFromLocalStorage() {
-  const saved = localStorage.getItem(TASKS_KEY);
-  const savedCompleted = localStorage.getItem(COMPLETED_KEY);
+  function toggleComplete(id) {
+    tasks = tasks.map(t => {
+      if (t.id === id) {
+        t.completed = !t.completed;
+        if (t.completed) {
+          completedTasks.push(t);
+          saveCompletedToLocalStorage();
+        }
+      }
+      return t;
+    });
 
-  if (saved) tasks = JSON.parse(saved);
-  if (savedCompleted) completedTasks = JSON.parse(savedCompleted);
-}
+    saveTasksToLocalStorage();
+    renderTasks();
+  }
 
-/*************************************************
- * EVENT 4 & 5: Load quote from API (3rd Party Fetch)
- *************************************************/
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveTasksToLocalStorage();
+    renderTasks();
+  }
 
-function loadDailyQuote() {
-  fetch("https://api.quotable.io/random")  // 3rd-party API
-    .then(res => res.json())
-    .then(data => {
-      const quoteBox = document.createElement("div");
-      quoteBox.className = "alert alert-info mt-4 fade-in text-center";
-      quoteBox.textContent = "${data.content}" - "${data.author}";
+  function saveTasksToLocalStorage() {
+    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+  }
 
-      document.querySelector(".container").prepend(quoteBox);
-    })
-    .catch(err => console.log("Quote API error:", err));
-}
+  function saveCompletedToLocalStorage() {
+    localStorage.setItem(COMPLETED_KEY, JSON.stringify(completedTasks));
+  }
+
+  function loadTasksFromLocalStorage() {
+    const saved = JSON.parse(localStorage.getItem(TASKS_KEY));
+    if (saved) tasks = saved;
+
+    const completed = JSON.parse(localStorage.getItem(COMPLETED_KEY));
+    if (completed) completedTasks = completed;
+  }
+
+  function loadDailyQuote() {
+    fetch("https://api.quotable.io/random")
+      .then(res => res.json())
+      .then(data => {
+        const box = document.createElement("div");
+        box.className = "alert alert-info text-center mt-4";
+        box.textContent = "${data.content}" - "${data.author}";
+        document.querySelector(".container").prepend(box);
+      });
+  }
+
+});
 
