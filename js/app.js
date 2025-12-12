@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load NAV
   fetch("components/nav.html")
-    .then(res => res.text())
-    .then(html => {
+    .then((res) => res.text())
+    .then((html) => {
       document.getElementById("navbar").innerHTML = html;
     });
 
@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tasks.forEach(task => {
       const item = document.createElement("div");
-      item.className = "list-group-item d-flex justify-content-between align-items-center";
+      item.className =
+        "list-group-item d-flex justify-content-between align-items-center";
 
       const label = document.createElement("span");
       label.textContent = task.text;
@@ -70,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (task.completed) {
         label.classList.add("text-decoration-line-through");
       }
+
+      // BUTTONS
 
       const btns = document.createElement("div");
 
@@ -83,36 +86,63 @@ document.addEventListener("DOMContentLoaded", () => {
       delBtn.textContent = "Delete";
       delBtn.onclick = () => deleteTask(task.id);
 
+      // EVENT: Edit Task
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn btn-warning btn-sm me-2";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", () => editTask(task.id));
+
       btns.appendChild(doneBtn);
       btns.appendChild(delBtn);
+      btns.appendChild(editBtn);
 
       item.appendChild(label);
       item.appendChild(btns);
 
       list.appendChild(item);
+
+      item.className =
+        "list-group-item d-flex align-items-center justify-content-between fade-in slide-in";
     });
   }
 
-  function toggleComplete(id) {
-    tasks = tasks.map(t => {
-      if (t.id === id) {
-        t.completed = !t.completed;
-        if (t.completed) {
-          completedTasks.push(t);
-          saveCompletedToLocalStorage();
-        }
+function toggleComplete(id) {
+  // Toggle completed flag
+  tasks = tasks.map((t) => {
+    if (t.id === id) {
+      t.completed = !t.completed;
+      // Ensure createdAt exists and is valid
+      if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
+        t.createdAt = new Date().toISOString();
       }
-      return t;
-    });
+    }
+    return t;
+  });
 
-    saveTasksToLocalStorage();
-    renderTasks();
-  }
+  // Rebuild completedTasks array (no duplicates)
+  completedTasks = tasks.filter((t) => t.completed);
+
+  saveCompletedToLocalStorage();
+  saveTasksToLocalStorage();
+  renderTasks();
+}
+
 
   function deleteTask(id) {
     tasks = tasks.filter(t => t.id !== id);
     saveTasksToLocalStorage();
     renderTasks();
+  }
+
+  function editTask(id) {
+    const task = tasks.find((t) => t.id === id);
+    const updatedText = prompt("Edit task:", task.text);
+
+    if (updatedText !== null && updatedText.trim() !== "") {
+      task.text = updatedText.trim();
+      saveTasksToLocalStorage();
+      renderTasks();
+    }
   }
 
   function saveTasksToLocalStorage() {
@@ -123,13 +153,54 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(COMPLETED_KEY, JSON.stringify(completedTasks));
   }
 
-  function loadTasksFromLocalStorage() {
-    const saved = JSON.parse(localStorage.getItem(TASKS_KEY));
-    if (saved) tasks = saved;
+function loadTasksFromLocalStorage() {
+  try {
+    const savedRaw = localStorage.getItem(TASKS_KEY);
+    const savedCompletedRaw = localStorage.getItem(COMPLETED_KEY);
 
-    const completed = JSON.parse(localStorage.getItem(COMPLETED_KEY));
-    if (completed) completedTasks = completed;
+    // Parse safely
+    const saved = savedRaw ? JSON.parse(savedRaw) : null;
+    const savedCompleted = savedCompletedRaw
+      ? JSON.parse(savedCompletedRaw)
+      : null;
+
+    // Ensure arrays
+    if (Array.isArray(saved)) {
+      // Migration: ensure every task has a valid createdAt
+      tasks = saved.map((t) => {
+        if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
+          // If missing or invalid, set now (or you could set to Date.now())
+          t.createdAt = new Date().toISOString();
+        }
+        return t;
+      });
+    } else {
+      tasks = [];
+    }
+
+    if (Array.isArray(savedCompleted)) {
+      completedTasks = savedCompleted.map((t) => {
+        if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
+          t.createdAt = new Date().toISOString();
+        }
+        return t;
+      });
+    } else {
+      completedTasks = [];
+    }
+  } catch (err) {
+    console.error(
+      "Failed to load tasks from localStorage — resetting keys.",
+      err
+    );
+    // If storage is corrupted, clear problematic keys (optional)
+    localStorage.removeItem(TASKS_KEY);
+    localStorage.removeItem(COMPLETED_KEY);
+    tasks = [];
+    completedTasks = [];
   }
+}
+
 
   function loadDailyQuote() {
     fetch("https://api.quotable.io/random")

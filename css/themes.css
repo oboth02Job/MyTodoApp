@@ -1,0 +1,43 @@
+/* Base smooth transition for theme switching */
+body, .card, .list-group-item, nav, footer {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Light Theme */
+.theme-light {
+  --bg: #ffffff;
+  --text: #222;
+  --card: #ffffff;
+}
+
+/* Dark Theme */
+.theme-dark {
+  --bg: #121212;
+  --text: #e5e5e5;
+  --card: #1e1e1e;
+}
+
+/* Blue Theme */
+.theme-blue {
+  --bg: #e9f3ff;
+  --text: #003366;
+  --card: #ffffff;
+}
+
+/* Purple Theme */
+.theme-purple {
+  --bg: #f5e9ff;
+  --text: #4b0082;
+  --card: #ffffff;
+}
+
+/* Universal usage */
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.card, .list-group-item {
+  background: var(--card) !important;
+  color: var(--text) !important;
+}
