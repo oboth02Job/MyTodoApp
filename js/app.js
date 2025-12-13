@@ -30,7 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------------------
   loadTasksFromLocalStorage();
   renderTasks();
-  loadDailyQuote();
+  loadRandomUser();
+  loadCatFact();
 
   // ----------------------------
   // ADD TASK
@@ -202,16 +203,18 @@ function loadTasksFromLocalStorage() {
 }
 
 
-  function loadDailyQuote() {
-    fetch("https://api.quotable.io/random")
-      .then(res => res.json())
-      .then(data => {
-        const box = document.createElement("div");
-        box.className = "alert alert-info text-center mt-4";
-        box.textContent = "${data.content}" - "${data.author}";
-        document.querySelector(".container").prepend(box);
-      });
+  function loadRandomUser() {
+    fetch("https://randomuser.me/api/")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data.results[0]);
+      });
   }
 
-});
+  async function loadCatFact() {
+    const res = await fetch("https://catfact.ninja/fact");
+    const data = await res.json();
+    document.getElementById("catFactBox").textContent = data.fact;
+  }
 
+});
