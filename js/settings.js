@@ -10,6 +10,7 @@ loadFooter();
 const darkBtn = document.getElementById("darkThemeBtn");
 const lightBtn = document.getElementById("lightThemeBtn");
 
+
 // Apply theme instantly when page loads
 applySavedTheme();
 

@@ -3,33 +3,28 @@ body, .card, .list-group-item, nav, footer {
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Light Theme */
-.theme-light {
-  --bg: #ffffff;
-  --text: #222;
-  --card: #ffffff;
+/* DEFAULT (LIGHT) */
+body {
+  background-color: #f8f9fa;
+  color: #212529;
 }
 
-/* Dark Theme */
-.theme-dark {
-  --bg: #121212;
-  --text: #e5e5e5;
-  --card: #1e1e1e;
+/* DARK */
+body.theme-dark {
+  background-color: #121212;
+  color: #f8f9fa;
 }
 
-/* Blue Theme */
-.theme-blue {
-  --bg: #e9f3ff;
-  --text: #003366;
-  --card: #ffffff;
+/* BLUE */
+body.theme-blue {
+  background-color: #0d6efd;
+  color: #ffffff;
 }
 
-/* Purple Theme */
-.theme-purple {
-  --bg: #f5e9ff;
-  --text: #4b0082;
-  --card: #ffffff;
-}
+/* PURPLE */
+body.theme-purple {
+  background-color: #6f42c1;
+  color: #ffffff;}
 
 /* Universal usage */
 body {

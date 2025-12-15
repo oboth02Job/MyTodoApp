@@ -4,10 +4,10 @@
  * SIMPLE CSS ANIMATION (Used in .fade-in)
  *************************************************/
 
- .fade-in { animation: fadeIn 0.5s ease-in; }
+ /* .fade-in { animation: fadeIn 0.5s ease-in; }
  @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 
- /* .api-card {
+  .api-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -22,4 +22,4 @@
 
 .api-card:hover img {
   transform: scale(1.05);
-} */
+}  */
