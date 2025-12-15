@@ -6,3 +6,20 @@
 
  .fade-in { animation: fadeIn 0.5s ease-in; }
  @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+
+ /* .api-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.api-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.api-card img {
+  transition: transform 0.3s ease;
+}
+
+.api-card:hover img {
+  transform: scale(1.05);
+} */

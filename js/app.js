@@ -30,13 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------------------
   loadTasksFromLocalStorage();
   renderTasks();
-  loadRandomUser();
-  loadCatFact();
+  
 
   // ----------------------------
   // ADD TASK
   // ----------------------------
-  document.getElementById("taskForm").addEventListener("submit", function(e) {
+  document.getElementById("taskForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
     const taskInput = document.getElementById("taskInput");
@@ -107,26 +106,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-function toggleComplete(id) {
-  // Toggle completed flag
-  tasks = tasks.map((t) => {
-    if (t.id === id) {
-      t.completed = !t.completed;
-      // Ensure createdAt exists and is valid
-      if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
-        t.createdAt = new Date().toISOString();
+  function toggleComplete(id) {
+    // Toggle completed flag
+    tasks = tasks.map((t) => {
+      if (t.id === id) {
+        t.completed = !t.completed;
+        // Ensure createdAt exists and is valid
+        if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
+          t.createdAt = new Date().toISOString();
+        }
       }
-    }
-    return t;
-  });
+      return t;
+    });
 
-  // Rebuild completedTasks array (no duplicates)
-  completedTasks = tasks.filter((t) => t.completed);
+    // Rebuild completedTasks array (no duplicates)
+    completedTasks = tasks.filter((t) => t.completed);
 
-  saveCompletedToLocalStorage();
-  saveTasksToLocalStorage();
-  renderTasks();
-}
+    saveCompletedToLocalStorage();
+    saveTasksToLocalStorage();
+    renderTasks();
+  }
 
 
   function deleteTask(id) {
@@ -154,67 +153,45 @@ function toggleComplete(id) {
     localStorage.setItem(COMPLETED_KEY, JSON.stringify(completedTasks));
   }
 
-function loadTasksFromLocalStorage() {
-  try {
-    const savedRaw = localStorage.getItem(TASKS_KEY);
-    const savedCompletedRaw = localStorage.getItem(COMPLETED_KEY);
+  function loadTasksFromLocalStorage() {
+    try {
+      const savedRaw = localStorage.getItem(TASKS_KEY);
+      const savedCompletedRaw = localStorage.getItem(COMPLETED_KEY);
 
-    // Parse safely
-    const saved = savedRaw ? JSON.parse(savedRaw) : null;
-    const savedCompleted = savedCompletedRaw
-      ? JSON.parse(savedCompletedRaw)
-      : null;
+      // Parse safely
+      const saved = savedRaw ? JSON.parse(savedRaw) : null;
+      const savedCompleted = savedCompletedRaw
+        ? JSON.parse(savedCompletedRaw)
+        : null;
 
-    // Ensure arrays
-    if (Array.isArray(saved)) {
-      // Migration: ensure every task has a valid createdAt
-      tasks = saved.map((t) => {
-        if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
-          // If missing or invalid, set now (or you could set to Date.now())
-          t.createdAt = new Date().toISOString();
-        }
-        return t;
-      });
-    } else {
-      tasks = [];
-    }
+      // Ensure arrays
+      if (Array.isArray(saved)) {
+        // Migration: ensure every task has a valid createdAt
+        tasks = saved.map((t) => {
+          if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
+            // If missing or invalid, set now (or you could set to Date.now())
+            t.createdAt = new Date().toISOString();
+          }
+          return t;
+        });
+      } else {
+        tasks = [];
+      }
 
-    if (Array.isArray(savedCompleted)) {
-      completedTasks = savedCompleted.map((t) => {
-        if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
-          t.createdAt = new Date().toISOString();
-        }
-        return t;
-      });
-    } else {
-      completedTasks = [];
-    }
-  } catch (err) {
-    console.error(
-      "Failed to load tasks from localStorage — resetting keys.",
-      err
-    );
-    // If storage is corrupted, clear problematic keys (optional)
-    localStorage.removeItem(TASKS_KEY);
-    localStorage.removeItem(COMPLETED_KEY);
-    tasks = [];
-    completedTasks = [];
-  }
+      if (Array.isArray(savedCompleted)) {
+        completedTasks = savedCompleted.map((t) => {
+          if (!t.createdAt || isNaN(Date.parse(t.createdAt))) {
+            t.createdAt = new Date().toISOString();
+          }
+          return t;
+        });
+      } else {
+        completedTasks = [];
+      }
+    } catch (err) {
+      console.error(
+        "Failed to load tasks from localStorage — resetting keys.",
+        err
+      )}
 }
-
-
-  function loadRandomUser() {
-    fetch("https://randomuser.me/api/")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data.results[0]);
-      });
-  }
-
-  async function loadCatFact() {
-    const res = await fetch("https://catfact.ninja/fact");
-    const data = await res.json();
-    document.getElementById("catFactBox").textContent = data.fact;
-  }
-
-});
+})
